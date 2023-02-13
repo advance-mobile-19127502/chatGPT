@@ -1,5 +1,7 @@
+import 'package:chatgpt/bloc/chat_bloc/chat_bloc.dart';
 import 'package:chatgpt/pages/chat_page/chat_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -22,20 +24,19 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     drawerItems = [
       ListTile(
-        title: Text("0"),
+        title: const Text("0"),
         onTap: () {
           onTapDrawer(0);
         },
-        trailing: IconButton(
-          icon: Icon(Icons.remove),
-          onPressed: () {
-            onRemoveDrawer(0);
-          },
-        ),
       )
     ];
 
-    chatPages = [ChatPage(key: UniqueKey())];
+    chatPages = [
+      BlocProvider(
+        create: (context) => ChatBloc(),
+        child: ChatPage(key: UniqueKey()),
+      )
+    ];
 
     _pageController = PageController(initialPage: _currentDrawerIndex);
   }
@@ -54,23 +55,18 @@ class _HomePageState extends State<HomePage> {
 
                     setState(() {
                       drawerItems.add(ListTile(
-                        title: Text("${tempLength}"),
+                        title: Text("$tempLength"),
                         onTap: () {
                           onTapDrawer(tempLength);
                         },
-                        trailing: IconButton(
-                          icon: Icon(Icons.remove),
-                          onPressed: () {
-                            onRemoveDrawer(tempLength);
-                          },
-                        ),
                       ));
-                      chatPages.add(ChatPage(
-                        key: UniqueKey(),
+                      chatPages.add(BlocProvider(
+                        create: (context) => ChatBloc(),
+                        child: ChatPage(key: UniqueKey()),
                       ));
                     });
                   },
-                  icon: Icon(Icons.add)),
+                  icon: const Icon(Icons.add)),
               Expanded(
                   child: SingleChildScrollView(
                 child: Column(
@@ -82,7 +78,6 @@ class _HomePageState extends State<HomePage> {
         ),
         body: PageView(
           controller: _pageController,
-          physics: NeverScrollableScrollPhysics(),
           children: chatPages,
         ),
       ),
@@ -96,12 +91,4 @@ class _HomePageState extends State<HomePage> {
       _pageController.jumpToPage(_currentDrawerIndex);
     });
   }
-
-  void onRemoveDrawer(int index) {
-    setState(() {
-      drawerItems.removeAt(index);
-      chatPages.removeAt(index);
-    });
-  }
-
 }
