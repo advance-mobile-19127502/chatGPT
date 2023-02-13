@@ -10,7 +10,10 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
+class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin<ChatPage> {
+  @override
+  bool get wantKeepAlive => true;
+
   List<ChatRow> _chatRow = [];
   final TextEditingController _sendMessageController = TextEditingController();
   late OpenAI? _openAI;
@@ -24,9 +27,11 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
     );
   }
 
+
   @override
   void dispose() {
     super.dispose();
+    print("dispose chatpage");
     _openAI?.close();
   }
 
@@ -97,7 +102,4 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
     });
   }
 
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
 }
