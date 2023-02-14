@@ -27,4 +27,11 @@ class ChatSuccess extends ChatState {
 
 }
 
-class ChatFailure extends ChatState { }
+class ChatFailure extends ChatState {
+  final String errorMsg;
+
+  const ChatFailure({required this.errorMsg});
+
+  @override
+  List<Object> get props => [errorMsg];
+}

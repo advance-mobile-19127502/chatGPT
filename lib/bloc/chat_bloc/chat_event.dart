@@ -2,7 +2,8 @@ part of 'chat_bloc.dart';
 
 class ChatEvent extends Equatable {
   final String requestMessage;
-  const ChatEvent(this.requestMessage);
+  final OpenAI openAI;
+  const ChatEvent(this.requestMessage, this.openAI);
 
   @override
   // TODO: implement props

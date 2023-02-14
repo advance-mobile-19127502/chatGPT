@@ -1,7 +1,9 @@
+import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:chatgpt/bloc/chat_bloc/chat_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 
 class SendMessageWidget extends StatefulWidget {
   const SendMessageWidget({Key? key}) : super(key: key);
@@ -13,6 +15,7 @@ class SendMessageWidget extends StatefulWidget {
 class _SendMessageWidgetState extends State<SendMessageWidget> {
   late ChatBloc _chatBloc;
   final TextEditingController _sendMessageController = TextEditingController();
+  late OpenAI _openAI;
 
   @override
   void initState() {
@@ -26,6 +29,8 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     _chatBloc = BlocProvider.of(context);
+    _openAI = Provider.of<OpenAI>(context);
+
   }
 
   @override
@@ -71,6 +76,6 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     if (_sendMessageController.text.isEmpty) return;
     String tempMessage = _sendMessageController.text;
     _sendMessageController.clear();
-    _chatBloc.add(ChatEvent(tempMessage));
+    _chatBloc.add(ChatEvent(tempMessage, _openAI));
   }
 }
