@@ -1,5 +1,6 @@
 import 'package:chatgpt/bloc/chat_bloc/chat_bloc.dart';
 import 'package:chatgpt/pages/chat_page/chat_page.dart';
+import 'package:chatgpt/pages/home_page/widgets/drawer_item_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -23,12 +24,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     drawerItems = [
-      ListTile(
-        title: const Text("0"),
-        onTap: () {
-          onTapDrawer(0);
-        },
-      )
+      DrawerItemWidget(
+          title: "Chat room 1", icon: Icons.chat_bubble, onTap: (){
+            onTapDrawer(0);
+      }),
     ];
 
     chatPages = [
@@ -49,24 +48,11 @@ class _HomePageState extends State<HomePage> {
         drawer: Drawer(
           child: Column(
             children: [
-              IconButton(
-                  onPressed: () {
-                    int tempLength = drawerItems.length;
-
-                    setState(() {
-                      drawerItems.add(ListTile(
-                        title: Text("$tempLength"),
-                        onTap: () {
-                          onTapDrawer(tempLength);
-                        },
-                      ));
-                      chatPages.add(BlocProvider(
-                        create: (context) => ChatBloc(),
-                        child: ChatPage(key: UniqueKey()),
-                      ));
-                    });
-                  },
-                  icon: const Icon(Icons.add)),
+              DrawerItemWidget(
+                title: "Add new chat room",
+                icon: Icons.add,
+                onTap: addNewChatRoom,
+              ),
               Expanded(
                   child: SingleChildScrollView(
                 child: Column(
@@ -89,6 +75,21 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentDrawerIndex = index;
       _pageController.jumpToPage(_currentDrawerIndex);
+    });
+  }
+
+  void addNewChatRoom() {
+    int tempLength = drawerItems.length;
+
+    setState(() {
+      drawerItems.add(DrawerItemWidget(
+          title: "Chat room ${tempLength + 1}", icon: Icons.chat_bubble, onTap: (){
+        onTapDrawer(tempLength);
+      }));
+      chatPages.add(BlocProvider(
+        create: (context) => ChatBloc(),
+        child: ChatPage(key: UniqueKey()),
+      ));
     });
   }
 }
