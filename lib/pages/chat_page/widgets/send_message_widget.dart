@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:avatar_glow/avatar_glow.dart';
 
 class SendMessageWidget extends StatefulWidget {
   const SendMessageWidget({Key? key}) : super(key: key);
@@ -17,11 +19,14 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
   final TextEditingController _sendMessageController = TextEditingController();
   late OpenAI _openAI;
 
+  late stt.SpeechToText _speech;
+  bool _isMicListening = false;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
+    _speech = stt.SpeechToText();
   }
 
   @override
@@ -30,7 +35,6 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     super.didChangeDependencies();
     _chatBloc = BlocProvider.of(context);
     _openAI = Provider.of<OpenAI>(context);
-
   }
 
   @override
@@ -38,9 +42,18 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     return BlocBuilder(
         bloc: _chatBloc,
         builder: (context, state) => Container(
-              padding: const EdgeInsets.only(bottom: 15, left: 15),
+              padding: const EdgeInsets.only(bottom: 15),
               child: Row(
                 children: [
+                  AvatarGlow(
+                    animate: _isMicListening,
+                    glowColor: Theme.of(context).primaryColor,
+                    endRadius: 20,
+                    repeat: true,
+                    duration: Duration(milliseconds: 2000),
+                    repeatPauseDuration: Duration(milliseconds: 100),
+                    child: IconButton(onPressed: _onListenMic , icon: Icon(_isMicListening ? Icons.mic : Icons.mic_none)),
+                  ),
                   Expanded(
                       child: TextField(
                     controller: _sendMessageController,
@@ -77,5 +90,48 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     String tempMessage = _sendMessageController.text;
     _sendMessageController.clear();
     _chatBloc.add(ChatEvent(tempMessage, _openAI));
+  }
+
+  void _onListenMic() async {
+    if (!_isMicListening)
+      {
+        bool available = await _speech.initialize(
+          onStatus: (val) {
+            print("onStatus: $val");
+            if (val == "done")
+              {
+                _sendMessage();
+                _turnOffMic();
+              }
+          },
+          onError: (val) {
+            print("onError: $val");
+            _turnOffMic();
+          }
+        );
+        if (available)
+          {
+            setState(() {
+              _isMicListening = true;
+            });
+            _speech.listen(
+              onResult: (val) => setState(() {
+                print("onresult" + val.recognizedWords);
+                _sendMessageController.text = val.recognizedWords;
+              })
+            );
+          }
+      }
+    else
+      {
+        _turnOffMic();
+      }
+  }
+
+  void _turnOffMic() {
+    setState(() {
+      _isMicListening = false;
+      _speech.stop();
+    });
   }
 }

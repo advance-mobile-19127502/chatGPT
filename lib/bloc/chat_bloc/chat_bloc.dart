@@ -17,6 +17,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           final request = CompleteText(prompt: event.requestMessage, model: kTranslateModelV3);
           final respone = await event.openAI.onCompleteText(request: request);
           if (respone != null) {
+            for (var i in respone.choices)
+              {
+                print(i.text);
+              }
             emit(ChatSuccess(botMessage: respone));
           }
           else {
