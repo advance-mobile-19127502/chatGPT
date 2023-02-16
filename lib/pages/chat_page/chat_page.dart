@@ -33,11 +33,9 @@ class _ChatPageState extends State<ChatPage>
     // TODO: implement initState
     super.initState();
     _openAI = OpenAI.instance.build(
-        token: ApiConst.APIKey,
-        baseOption: HttpSetup(receiveTimeout: 15000));
+        token: ApiConst.APIKey, baseOption: HttpSetup(receiveTimeout: 15000));
     _lengthChat = ValueNotifier<int>(_chatRow.length);
   }
-
 
   @override
   void didChangeDependencies() {
@@ -60,39 +58,58 @@ class _ChatPageState extends State<ChatPage>
     return BlocConsumer(
       bloc: _chatBloc,
       listener: (context, state) {
-        if (state is ChatSuccess)
-          {
-            _chatRow.insert(0, ChatRow(isBot: true, message: state.botMessage.choices[0].text, indexChat: _chatRow.length,));
-          }
-        if (state is ChatLoading)
-          {
-            _chatRow.insert(0, ChatRow(isBot: false, message: state.userMessage, indexChat: _chatRow.length,));
-          }
+        if (state is ChatSuccess) {
+          _chatRow.insert(
+              0,
+              ChatRow(
+                isBot: true,
+                message: state.botMessage.choices[0].text,
+                indexChat: _chatRow.length,
+              ));
+        }
+        if (state is ChatLoading) {
+          _chatRow.insert(
+              0,
+              ChatRow(
+                isBot: false,
+                message: state.userMessage,
+                indexChat: _chatRow.length,
+              ));
+        }
+        if (state is ChatFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(state.errorMsg),
+            backgroundColor: Colors.red,
+            elevation: 0,
+          ));
+        }
         _lengthChat.value = _chatRow.length;
       },
       builder: (context, state) {
         return MultiProvider(
           providers: [
-            Provider<OpenAI?> (create: (_) => _openAI),
-            ChangeNotifierProvider<ValueNotifier<int>>(create: (context) => _lengthChat,)
+            Provider<OpenAI?>(create: (_) => _openAI),
+            ChangeNotifierProvider<ValueNotifier<int>>(
+              create: (context) => _lengthChat,
+            )
           ],
           child: Column(
             children: [
               Expanded(
                   child: ListView.builder(
-                    reverse: true,
-                    itemCount: _chatRow.length,
-                    itemBuilder: (context, index) {
-                      return _chatRow[index];
-                    },
-                  )),
+                reverse: true,
+                itemCount: _chatRow.length,
+                itemBuilder: (context, index) {
+                  return _chatRow[index];
+                },
+              )),
 
-
-              state is ChatLoading ? const SpinKitThreeBounce(
-                size: 25,
-                color: Colors.blueAccent,
-              ) : const SizedBox(),
-
+              state is ChatLoading
+                  ? const SpinKitThreeBounce(
+                      size: 25,
+                      color: Colors.blueAccent,
+                    )
+                  : const SizedBox(),
 
               const Divider(
                 thickness: 2,
