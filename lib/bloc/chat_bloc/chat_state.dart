@@ -17,13 +17,23 @@ class ChatLoading extends ChatState {
   List<Object> get props => [userMessage];
 }
 
-class ChatSuccess extends ChatState {
-  final CTResponse botMessage;
+class ChatMessageSuccess extends ChatState {
+  final ChatCTResponse botMessage;
 
-  const ChatSuccess({required this.botMessage});
+  const ChatMessageSuccess({required this.botMessage});
 
   @override
   List<Object> get props => [botMessage];
+
+}
+
+class ChatImageSuccess extends ChatState {
+  final GenImgResponse imageResponseMessage;
+
+  const ChatImageSuccess({required this.imageResponseMessage});
+
+  @override
+  List<Object> get props => [imageResponseMessage];
 
 }
 

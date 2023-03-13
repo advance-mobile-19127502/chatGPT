@@ -17,7 +17,6 @@ class SendMessageWidget extends StatefulWidget {
 class _SendMessageWidgetState extends State<SendMessageWidget> {
   late ChatBloc _chatBloc;
   final TextEditingController _sendMessageController = TextEditingController();
-  late OpenAI _openAI;
 
   late stt.SpeechToText _speech;
   bool _isMicListening = false;
@@ -27,14 +26,7 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     // TODO: implement initState
     super.initState();
     _speech = stt.SpeechToText();
-  }
-
-  @override
-  void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
-    super.didChangeDependencies();
     _chatBloc = BlocProvider.of(context);
-    _openAI = Provider.of<OpenAI>(context);
   }
 
   @override
@@ -52,14 +44,17 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
                     repeat: true,
                     duration: Duration(milliseconds: 2000),
                     repeatPauseDuration: Duration(milliseconds: 100),
-                    child: IconButton(onPressed: _onListenMic , icon: Icon(_isMicListening ? Icons.mic : Icons.mic_none)),
+                    child: IconButton(
+                        onPressed: _onListenMic,
+                        icon:
+                            Icon(_isMicListening ? Icons.mic : Icons.mic_none)),
                   ),
                   Expanded(
                       child: TextField(
                     controller: _sendMessageController,
-                    onSubmitted: (value) {
-                      _sendMessage();
-                    },
+                    // onSubmitted: (value) {
+                    //   _sendMessage();
+                    // },
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: const BorderSide(color: Colors.black),
@@ -73,13 +68,41 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
                           size: 25,
                           color: Colors.blueAccent,
                         )
-                      : IconButton(
-                          icon: const Icon(Icons.send),
-                          iconSize: 30,
-                          onPressed: () {
-                            _sendMessage();
+                      : PopupMenuButton(
+                          onSelected: (String value) {
+                            switch (value) {
+                              case "message":
+                                {
+                                  _sendMessage();
+                                  break;
+                                }
+                              case "image":
+                                {
+                                  _sendImage();
+                                  break;
+                                }
+                            }
                           },
-                        )
+                          itemBuilder: (context) => [
+                                PopupMenuItem(
+                                    value: "message",
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: const [
+                                        Text("Message"),
+                                        Icon(Icons.message)
+                                      ],
+                                    )),
+                                PopupMenuItem(
+                                    value: "image",
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: const [
+                                        Text("Image"),
+                                        Icon(Icons.image)
+                                      ],
+                                    )),
+                              ])
                 ],
               ),
             ));
@@ -89,43 +112,40 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
     if (_sendMessageController.text.isEmpty) return;
     String tempMessage = _sendMessageController.text;
     _sendMessageController.clear();
-    _chatBloc.add(ChatEvent(tempMessage, _openAI));
+    _chatBloc.add(ChatMessageEvent(tempMessage));
+  }
+
+  void _sendImage() async {
+    if (_sendMessageController.text.isEmpty) return;
+    String tempMessage = _sendMessageController.text;
+    _sendMessageController.clear();
+    _chatBloc.add(ChatGenImageEvent(tempMessage));
   }
 
   void _onListenMic() async {
-    if (!_isMicListening)
-      {
-        bool available = await _speech.initialize(
-          onStatus: (val) {
-            print("onStatus: $val");
-            if (val == "done")
-              {
-                _sendMessage();
-                _turnOffMic();
-              }
-          },
-          onError: (val) {
-            print("onError: $val");
-            _turnOffMic();
-          }
-        );
-        if (available)
-          {
-            setState(() {
-              _isMicListening = true;
-            });
-            _speech.listen(
-              onResult: (val) => setState(() {
-                print("onresult" + val.recognizedWords);
-                _sendMessageController.text = val.recognizedWords;
-              })
-            );
-          }
-      }
-    else
-      {
+    if (!_isMicListening) {
+      bool available = await _speech.initialize(onStatus: (val) {
+        print("onStatus: $val");
+        if (val == "done") {
+          // _sendMessage();
+          _turnOffMic();
+        }
+      }, onError: (val) {
+        print("onError: $val");
         _turnOffMic();
+      });
+      if (available) {
+        setState(() {
+          _isMicListening = true;
+        });
+        _speech.listen(
+            onResult: (val) => setState(() {
+                  _sendMessageController.text = val.recognizedWords;
+                }));
       }
+    } else {
+      _turnOffMic();
+    }
   }
 
   void _turnOffMic() {

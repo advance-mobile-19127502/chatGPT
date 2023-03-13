@@ -1,6 +1,6 @@
 
 
 class ApiConst {
-  static String APIKey = "23123";
-  static String OrgID = "3123123113";
+  static String APIKey = "";
+  static String OrgID = "";
 }

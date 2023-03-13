@@ -53,10 +53,10 @@ packages:
     dependency: "direct main"
     description:
       name: chat_gpt_sdk
-      sha256: "7c43dd508d3e70ea4bbf237721992c631b094d2ea5744b2d8b56c7cb5003e455"
+      sha256: "30a5d9d3b9b61c5e3a2f9067c7ed7efff9725a1eb07633e430455b607ed6dfc3"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.4"
   clock:
     dependency: transitive
     description:
@@ -85,10 +85,10 @@ packages:
     dependency: transitive
     description:
       name: dio
-      sha256: "7d328c4d898a61efc3cd93655a0955858e29a0aa647f0f9e02d59b3bb275e2e8"
+      sha256: "2644a9e0965a7aa3deb09cb8ce4081db4450c178f472818c8cd34216a3070d7b"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.6"
+    version: "5.0.2"
   equatable:
     dependency: "direct main"
     description:
@@ -462,5 +462,5 @@ packages:
     source: hosted
     version: "1.0.0"
 sdks:
-  dart: ">=2.18.6 <3.0.0"
+  dart: ">=2.19.3 <3.0.0"
   flutter: ">=3.0.0"
