@@ -1,11 +1,24 @@
 part of 'chat_bloc.dart';
 
-class ChatEvent extends Equatable {
-  final String requestMessage;
-  final OpenAI openAI;
-  const ChatEvent(this.requestMessage, this.openAI);
+abstract class ChatEvent extends Equatable {
+
+  const ChatEvent();
 
   @override
   // TODO: implement props
   List<Object?> get props => [];
+}
+
+
+class ChatMessageEvent extends ChatEvent {
+  final String requestMessage;
+
+  const ChatMessageEvent(this.requestMessage);
+
+}
+
+class ChatGenImageEvent extends ChatEvent {
+  final String requestMessage;
+  const ChatGenImageEvent(this.requestMessage);
+
 }

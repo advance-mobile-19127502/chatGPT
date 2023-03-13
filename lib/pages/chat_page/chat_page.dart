@@ -15,10 +15,7 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage>
-    with AutomaticKeepAliveClientMixin<ChatPage> {
-  @override
-  bool get wantKeepAlive => true;
+class _ChatPageState extends State<ChatPage> {
 
   final List<ChatRow> _chatRow = [];
 
@@ -26,14 +23,11 @@ class _ChatPageState extends State<ChatPage>
 
   late ChatBloc _chatBloc;
 
-  late OpenAI? _openAI;
+
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _openAI = OpenAI.instance.build(
-        token: ApiConst.APIKey, baseOption: HttpSetup(receiveTimeout: 15000));
     _lengthChat = ValueNotifier<int>(_chatRow.length);
   }
 
@@ -48,79 +42,90 @@ class _ChatPageState extends State<ChatPage>
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _openAI?.close();
+    _chatBloc.openAI.close();
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    return Scaffold(
+      body: SafeArea(
+        child: BlocConsumer(
+          bloc: _chatBloc,
+          listener: (context, state) {
+            if (state is ChatMessageSuccess) {
+              _chatRow.insert(
+                  0,
+                  ChatRow(
+                    isImage: false,
+                    isBot: true,
+                    message: state.botMessage.choices[0].message.content,
+                    indexChat: _chatRow.length,
+                  ));
+            }
+            else if (state is ChatImageSuccess)
+              {
+                _chatRow.insert(
+                    0,
+                    ChatRow(
+                      isImage: true,
+                      isBot: true,
+                      message: state.imageResponseMessage.data!.last!.url!,
+                      indexChat: _chatRow.length,
 
-    return BlocConsumer(
-      bloc: _chatBloc,
-      listener: (context, state) {
-        if (state is ChatSuccess) {
-          _chatRow.insert(
-              0,
-              ChatRow(
-                isBot: true,
-                message: state.botMessage.choices[0].text,
-                indexChat: _chatRow.length,
+                    ));
+              }
+            else if (state is ChatLoading) {
+              _chatRow.insert(
+                  0,
+                  ChatRow(
+                    isImage: false,
+                    isBot: false,
+                    message: state.userMessage,
+                    indexChat: _chatRow.length,
+                  ));
+            }
+            if (state is ChatFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(state.errorMsg),
+                backgroundColor: Colors.red,
+                elevation: 0,
               ));
-        }
-        if (state is ChatLoading) {
-          _chatRow.insert(
-              0,
-              ChatRow(
-                isBot: false,
-                message: state.userMessage,
-                indexChat: _chatRow.length,
-              ));
-        }
-        if (state is ChatFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.errorMsg),
-            backgroundColor: Colors.red,
-            elevation: 0,
-          ));
-        }
-        _lengthChat.value = _chatRow.length;
-      },
-      builder: (context, state) {
-        return MultiProvider(
-          providers: [
-            Provider<OpenAI?>(create: (_) => _openAI),
-            ChangeNotifierProvider<ValueNotifier<int>>(
+            }
+            _lengthChat.value = _chatRow.length;
+          },
+          builder: (context, state) {
+            return ChangeNotifierProvider<ValueNotifier<int>>(
               create: (context) => _lengthChat,
-            )
-          ],
-          child: Column(
-            children: [
-              Expanded(
-                  child: ListView.builder(
-                reverse: true,
-                itemCount: _chatRow.length,
-                itemBuilder: (context, index) {
-                  return _chatRow[index];
-                },
-              )),
+              child: Column(
+                children: [
+                  Expanded(
+                      child: ListView.builder(
+                    reverse: true,
+                    itemCount: _chatRow.length,
+                    itemBuilder: (context, index) {
+                      return _chatRow[index];
+                    },
+                  )),
 
-              state is ChatLoading
-                  ? const SpinKitThreeBounce(
-                      size: 25,
-                      color: Colors.blueAccent,
-                    )
-                  : const SizedBox(),
+                  state is ChatLoading
+                      ? const SpinKitThreeBounce(
+                          size: 25,
+                          color: Colors.blueAccent,
+                        )
+                      : const SizedBox(),
 
-              const Divider(
-                thickness: 2,
+                  const Divider(
+                    thickness: 2,
+                  ),
+
+                  //Send message
+                  const SendMessageWidget(),
+                ],
               ),
-
-              //Send message
-              const SendMessageWidget(),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }
